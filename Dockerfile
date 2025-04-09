@@ -18,7 +18,6 @@ RUN apt-get install -y nocache  \
   libpq5 \
   && pip install --upgrade pip wheel setuptools
 
-
 # Install Build deps
 RUN apt-get install build-essential --no-install-recommends --yes nocache \
   gcc \
@@ -39,12 +38,16 @@ RUN apt-get install build-essential --no-install-recommends --yes nocache \
   git \
   mitmproxy \
   && pip install psycopg2
+
+RUN apt-get install -y samba-common-bin
   
 # Install Cuckoo Sandbox Required Dependencies
 ENV LIBRARY_PATH=/lib:/usr/lib
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 RUN pip install cryptography==3.2 ssdeep pydeep
+
+RUN pip install -U pyopenssl
 
 # Prepare for Cuckoo installation
 RUN mkdir /cuckoo \
@@ -81,6 +84,9 @@ COPY docker-entrypoint.sh /entrypoint.sh
 RUN chown -R cuckoo /cuckoo \
   && chmod +x /entrypoint.sh
 
+RUN mkdir -p /var/run/samba && \
+  chown -R 1000:1000 /var/run/samba && \
+  chmod 0755 /var/run/samba
 
 #VOLUME ["/cuckoo/conf"]
 
